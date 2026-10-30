@@ -1,6 +1,6 @@
 {
   "name": "@guojing6/dsh-deepseek-chat",
-  "version": "2.0.4",
+  "version": "2.2.0",
   "description": "DeepSeek Harness client plugin: switch the sidebar title into an in-app DeepSeek Chat view (desktop) or open it in the current page (web).",
   "type": "module",
   "main": "lib/index.js",
@@ -20,11 +20,24 @@
     "cordis.patch.yml"
   ],
   "dsh": {
+    "manifestVersion": 1,
     "client": {
       "platform": "web"
     },
     "bundle": {
       "patch": "./cordis.patch.yml"
+    },
+    "compatibility": {
+      "dshReleases": {
+        "0.2.1-alpha.3": "compatible",
+        "0.2.1-alpha.4": "compatible",
+        "0.2.1-alpha.5": "compatible",
+        "0.2.1-rc.1": "compatible",
+        "0.2.1-rc.2": "compatible",
+        "0.2.1-rc.3": "compatible",
+        "0.2.1-rc.4": "compatible",
+        "0.2.1-rc.5": "compatible"
+      }
     }
   },
   "keywords": [
@@ -48,6 +61,7 @@
   },
   "scripts": {
     "test": "node --test",
+    "test:sandbox": "node --test --test-isolation=none",
     "check": "node --check lib/client.js && node --check lib/index.js"
   }
 }
