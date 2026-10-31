@@ -1,6 +1,6 @@
 {
   "name": "@guojing6/dsh-deepseek-chat",
-  "version": "3.0.2",
+  "version": "3.1.0",
   "description": "DeepSeek Harness client plugin: a right-sidebar DeepSeek Chat tab (guide card + Ctrl+Q + a session-header switch) that embeds chat.deepseek.com beside the conversation.",
   "type": "module",
   "main": "lib/index.js",

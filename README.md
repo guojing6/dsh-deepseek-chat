@@ -4,7 +4,7 @@
 
 DeepSeek Harness 客户端插件（web 与 desktop profile）：把 **DeepSeek Chat** 放进 DSH 的**右侧栏**，与对话并排使用。
 
-**已发布到 npm**：`@guojing6/dsh-deepseek-chat`（当前 `3.0.2`，`latest`），可直接用 `dsh plugin --profile <name> add @guojing6/dsh-deepseek-chat` 安装；也可以从源码安装。详见[安装](#安装)。
+**已发布到 npm**：`@guojing6/dsh-deepseek-chat`（当前 `3.1.0`，`latest`），可直接用 `dsh plugin --profile <name> add @guojing6/dsh-deepseek-chat` 安装；也可以从源码安装。详见[安装](#安装)。
 
 | 入口 | 结果 |
 | --- | --- |
@@ -21,10 +21,11 @@ DeepSeek Harness 客户端插件（web 与 desktop profile）：把 **DeepSeek C
 - **3.0.0**：**主版本：DeepSeek Chat 迁移进右侧栏**（入口与交互方式都变了，所以升大版本）。不再用浮层盖住主内容列、也不再有自己的返回圆按钮：改为注册右侧栏标签页类型（`ctx.sidebarRightTabs.register`）、标签页正文（`sidebar.right.pane.tab` 槽位）与 `Ctrl+Q` 命令；开始界面新增 DeepSeek Chat 卡片。旧的全屏内嵌视图、frame 几何测量与圆按钮全部删除。标签页正文按自带 Browser 标签的 flex 尺寸链铺满面板。
 - **3.0.1**：仅文档更新——README 增加「已发布到 npm」说明与 npm 安装方式；无代码变更。
 - **3.0.2**：GitHub 用户名由 `Guojing6` 改为 `guojing6`，同步更新 README 里的 clone 地址与 `package.json` 的 repository/homepage/bugs 链接；无代码变更。
+- **3.1.0**：标签页 chip 注册自己的 title seat——标题左侧显示 DeepSeek Chat 鲸鱼 logo，标题文字单独占位（空间不足时才省略，完整标题保留在 tooltip 里）。
 
 ## 安装
 
-插件已发布到 [npm](https://www.npmjs.com/package/@guojing6/dsh-deepseek-chat)（`latest` = `3.0.2`）。Web 与 Desktop 使用各自独立的 profile（`$DSH_HOME/profiles/web` 与 `$DSH_HOME/profiles/desktop`），互不共享插件，需分别安装。
+插件已发布到 [npm](https://www.npmjs.com/package/@guojing6/dsh-deepseek-chat)（`latest` = `3.1.0`）。Web 与 Desktop 使用各自独立的 profile（`$DSH_HOME/profiles/web` 与 `$DSH_HOME/profiles/desktop`），互不共享插件，需分别安装。
 
 ### 方式一：从 npm 安装（推荐）
 
@@ -36,9 +37,9 @@ dsh plugin --profile web add @guojing6/dsh-deepseek-chat
 dsh plugin --profile desktop add @guojing6/dsh-deepseek-chat
 ```
 
-需要固定版本时写成 `@guojing6/dsh-deepseek-chat@3.0.2`；升级用 `dsh plugin --profile <name> add @guojing6/dsh-deepseek-chat@latest`（`dsh plugin` 会把参数转发给 profile 目录里的 pnpm，所以 pnpm 的 `@version` / `@latest` 语法都可用）。npm 包内只包含 `lib/client.js`、`lib/index.js`、`cordis.patch.yml`、`README.md` 与 `LICENSE`。
+需要固定版本时写成 `@guojing6/dsh-deepseek-chat@3.1.0`；升级用 `dsh plugin --profile <name> add @guojing6/dsh-deepseek-chat@latest`（`dsh plugin` 会把参数转发给 profile 目录里的 pnpm，所以 pnpm 的 `@version` / `@latest` 语法都可用）。npm 包内只包含 `lib/client.js`、`lib/index.js`、`cordis.patch.yml`、`README.md` 与 `LICENSE`。
 
-> npm 的版本列表里还能看到一个 `0.0.0-stage`：这是 npm 对「新包首次发布」的占位版本（staged creation 的公开占位），内容为空、不参与安装；`latest` 指向 `3.0.2`，忽略即可。
+> npm 的版本列表里还能看到一个 `0.0.0-stage`：这是 npm 对「新包首次发布」的占位版本（staged creation 的公开占位），内容为空、不参与安装；`latest` 指向 `3.1.0`，忽略即可。
 
 ### 方式二：从源码安装（开发/离线）
 
@@ -122,9 +123,9 @@ DeepSeek Chat 的登录凭证在 localStorage（`userToken` 与 `__appKit_userIn
 
 ```sh
 npm run check   # 语法检查（node --check lib/client.js && lib/index.js）
-npm test        # 20 个用例（node --test，无外部依赖）
+npm test        # 21 个用例（node --test，无外部依赖）
 # 沙箱禁止子进程时（node --test 报 spawn EPERM）：
 npm run test:sandbox   # 等价于 node --test --test-isolation=none
 ```
 
-`test/session.test.mjs` 用桩 DOM 加载插件本体，覆盖：guest 存储快照的裁剪/异常上报、快照回写与失败上报、宿主侧快照的版本与来源校验；**激活冒烟测试**——直接跑真实源码的 `apply`，断言右侧栏类型注册（id/kind/priority/keepMounted/guide 卡片顺序与 commandId/图标）、正文槽位 key、会话头部按钮仍在 `order < -10` 的最左位置、`Ctrl+Q` 命令的默认绑定与「无会话被阻止」、语言跟随、样式表归属、停用后注册与样式全部撤回；以及**标签页 guest**——挂载正文时申请租约并塞入 bootstrap `<webview>`、卸载时退租与移除、`dom-ready` 后换 UA 并进首页、有快照时先走种子页并回写、链接进 Browser 标签或回退系统浏览器、重复 ref 不重复建 guest、Web 下用 iframe。桩 guest 照抄 Electron 的契约：**`dom-ready` 之前任何方法都抛错**。
+`test/session.test.mjs` 用桩 DOM 加载插件本体，覆盖：guest 存储快照的裁剪/异常上报、快照回写与失败上报、宿主侧快照的版本与来源校验；**激活冒烟测试**——直接跑真实源码的 `apply`，断言右侧栏类型注册（id/kind/priority/keepMounted/guide 卡片顺序与 commandId/图标）、正文与 chip 标题两个槽位 key、chip 标题组件（鲸鱼 logo + 文字 + tooltip）、会话头部按钮仍在 `order < -10` 的最左位置、`Ctrl+Q` 命令的默认绑定与「无会话被阻止」、语言跟随、样式表归属、停用后注册与样式全部撤回；以及**标签页 guest**——挂载正文时申请租约并塞入 bootstrap `<webview>`、卸载时退租与移除、`dom-ready` 后换 UA 并进首页、有快照时先走种子页并回写、链接进 Browser 标签或回退系统浏览器、重复 ref 不重复建 guest、Web 下用 iframe。桩 guest 照抄 Electron 的契约：**`dom-ready` 之前任何方法都抛错**。

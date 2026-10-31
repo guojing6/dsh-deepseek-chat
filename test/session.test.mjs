@@ -290,8 +290,13 @@ function createContext(options = {}) {
       return element
     },
     bodyComponent() {
-      const entry = registrations.find((candidate) => !candidate.disposed && candidate.registration.key !== undefined)
+      const entry = registrations.find((candidate) => !candidate.disposed && candidate.registration.name === 'sidebar.right.pane.tab')
       assert.ok(entry, 'the tab body must be registered under the type id')
+      return { registration: entry.registration, component: entry.component }
+    },
+    titleComponent() {
+      const entry = registrations.find((candidate) => !candidate.disposed && candidate.registration.name === 'sidebar.right.pane.tab.title')
+      assert.ok(entry, 'the tab chip title must be registered under the type id')
       return { registration: entry.registration, component: entry.component }
     },
     dispose() {
@@ -339,7 +344,7 @@ function loadForActivation(options = {}) {
   // React comes from the shell's shared module table; the stand-in provides only what the
   // plugin's slot occupants use (elements, refs, callbacks).
   const react = {
-    createElement(type, props) { return { type, props: props ?? {} } },
+    createElement(type, props, ...children) { return { type, props: { ...(props ?? {}), children } } },
     useRef(initial) { return { current: initial } },
     useCallback(fn) { return fn },
   }
@@ -416,6 +421,22 @@ describe('activation', () => {
     const element = context.switchElement()
     assert.equal(element.props['aria-label'], '打开 DeepSeek Chat')
     assert.match(element.props.dangerouslySetInnerHTML.__html, /<svg[^>]*>/)
+  })
+
+  it('renders the tab chip title with the DeepSeek Chat mark', () => {
+    const { context } = activate()
+    const title = context.titleComponent()
+    assert.equal(title.registration.name, 'sidebar.right.pane.tab.title')
+    assert.equal(title.registration.key, '@guojing6/dsh-deepseek-chat/tab')
+    const element = title.component({ useTabInfo: () => ({ tab: { id: 'tab-1', title: 'DeepSeek Chat' } }) })
+    assert.equal(element.type, 'span')
+    assert.equal(element.props.className, 'dsh-deepseek-chat-tabtitle')
+    assert.equal(element.props.title, 'DeepSeek Chat', 'the full title stays available as a tooltip')
+    const [icon, label] = element.props.children
+    assert.equal(icon.props.className, 'dsh-deepseek-chat-tabtitle-icon')
+    assert.match(icon.props.dangerouslySetInnerHTML.__html, /<svg[^>]*>/, 'the chip must carry the whale mark')
+    assert.equal(label.props.className, 'dsh-deepseek-chat-tabtitle-text')
+    assert.equal(label.props.children.join(''), 'DeepSeek Chat')
   })
 
   it('opens the tab from the header switch and the Ctrl+Q command', () => {
