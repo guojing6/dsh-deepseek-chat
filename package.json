@@ -1,6 +1,6 @@
 {
   "name": "@guojing6/dsh-deepseek-chat",
-  "version": "3.0.1",
+  "version": "3.0.2",
   "description": "DeepSeek Harness client plugin: a right-sidebar DeepSeek Chat tab (guide card + Ctrl+Q + a session-header switch) that embeds chat.deepseek.com beside the conversation.",
   "type": "module",
   "main": "lib/index.js",
@@ -50,11 +50,11 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Guojing6/dsh-deepseek-chat.git"
+    "url": "git+https://github.com/guojing6/dsh-deepseek-chat.git"
   },
-  "homepage": "https://github.com/Guojing6/dsh-deepseek-chat#readme",
+  "homepage": "https://github.com/guojing6/dsh-deepseek-chat#readme",
   "bugs": {
-    "url": "https://github.com/Guojing6/dsh-deepseek-chat/issues"
+    "url": "https://github.com/guojing6/dsh-deepseek-chat/issues"
   },
   "publishConfig": {
     "access": "public"
