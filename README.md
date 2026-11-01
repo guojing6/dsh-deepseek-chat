@@ -4,12 +4,12 @@
 
 DeepSeek Harness 客户端插件（web 与 desktop profile）：把 **DeepSeek Chat** 放进 DSH 的**右侧栏**，与对话并排使用。
 
-**已发布到 npm**：`@guojing6/dsh-deepseek-chat`（当前 `3.1.1`，`latest`），可直接用 `dsh plugin --profile <name> add @guojing6/dsh-deepseek-chat` 安装；也可以从源码安装。详见[安装](#安装)。
+**已发布到 npm**：`@guojing6/dsh-deepseek-chat`（当前 `3.1.2`，`latest`），可直接用 `dsh plugin --profile <name> add @guojing6/dsh-deepseek-chat` 安装；也可以从源码安装。详见[安装](#安装)。
 
 | 入口 | 结果 |
 | --- | --- |
 | 会话头部工具区最左侧的 DeepSeek Chat 鲸鱼按钮（「用 VSCode 打开 / 下载会话日志 / 反馈」的左边） | 在右侧栏打开（或聚焦）DeepSeek Chat 标签页 |
-| 新会话界面（还没开始对话）右侧的 DeepSeek Chat 按钮 | 同上（该界面不渲染会话头部工具区，所以单独注册在 hero 选项行） |
+| 新会话界面（还没开始对话）右上角、打开侧边栏按钮的左边 | 同上（该界面不渲染会话头部工具区，所以按钮通过 frame overlay 定位在展开按钮左侧） |
 | 点「打开侧边栏」后开始界面里的 **DeepSeek Chat** 卡片（工作区文件、新建终端、浏览器、会话数据诊断之间） | 同上：在右侧栏打开 DeepSeek Chat 标签页 |
 | **Ctrl+Q**（Windows Desktop；macOS 为 ⌘⌥Q；Desktop Linux 与 Web 默认不绑定） | 同上；没有打开会话时命令被阻止并在快捷键列表里说明原因 |
 
@@ -24,10 +24,11 @@ DeepSeek Harness 客户端插件（web 与 desktop profile）：把 **DeepSeek C
 - **3.0.2**：GitHub 用户名由 `Guojing6` 改为 `guojing6`，同步更新 README 里的 clone 地址与 `package.json` 的 repository/homepage/bugs 链接；无代码变更。
 - **3.1.0**：标签页 chip 注册自己的 title seat——标题左侧显示 DeepSeek Chat 鲸鱼 logo，标题文字单独占位（空间不足时才省略，完整标题保留在 tooltip 里）。
 - **3.1.1**：新会话界面（hero）也显示 DeepSeek Chat 按钮——该界面用 `hideChrome` 渲染会话头部、不挂载 utilities 行，所以把同一个按钮额外注册到 `conversation.hero.options`（两个槽位按阶段互补，不会重复）；按钮改用 class 样式避免两实例短暂并存时出现重复 DOM id。
+- **3.1.2**：新会话界面的按钮改到**打开侧边栏按钮的左边**——`corner` 是 single 槽且已被展开按钮占用，不能直接加第二个，因此改注册到 `shell.overlay`，运行时测量展开按钮位置把按钮吸附到它左侧，并且只在 `data-phase="hero"` 时显示。
 
 ## 安装
 
-插件已发布到 [npm](https://www.npmjs.com/package/@guojing6/dsh-deepseek-chat)（`latest` = `3.1.1`）。Web 与 Desktop 使用各自独立的 profile（`$DSH_HOME/profiles/web` 与 `$DSH_HOME/profiles/desktop`），互不共享插件，需分别安装。
+插件已发布到 [npm](https://www.npmjs.com/package/@guojing6/dsh-deepseek-chat)（`latest` = `3.1.2`）。Web 与 Desktop 使用各自独立的 profile（`$DSH_HOME/profiles/web` 与 `$DSH_HOME/profiles/desktop`），互不共享插件，需分别安装。
 
 ### 方式一：从 npm 安装（推荐）
 
@@ -39,9 +40,9 @@ dsh plugin --profile web add @guojing6/dsh-deepseek-chat
 dsh plugin --profile desktop add @guojing6/dsh-deepseek-chat
 ```
 
-需要固定版本时写成 `@guojing6/dsh-deepseek-chat@3.1.1`；升级用 `dsh plugin --profile <name> add @guojing6/dsh-deepseek-chat@latest`（`dsh plugin` 会把参数转发给 profile 目录里的 pnpm，所以 pnpm 的 `@version` / `@latest` 语法都可用）。npm 包内只包含 `lib/client.js`、`lib/index.js`、`cordis.patch.yml`、`README.md` 与 `LICENSE`。
+需要固定版本时写成 `@guojing6/dsh-deepseek-chat@3.1.2`；升级用 `dsh plugin --profile <name> add @guojing6/dsh-deepseek-chat@latest`（`dsh plugin` 会把参数转发给 profile 目录里的 pnpm，所以 pnpm 的 `@version` / `@latest` 语法都可用）。npm 包内只包含 `lib/client.js`、`lib/index.js`、`cordis.patch.yml`、`README.md` 与 `LICENSE`。
 
-> npm 的版本列表里还能看到一个 `0.0.0-stage`：这是 npm 对「新包首次发布」的占位版本（staged creation 的公开占位），内容为空、不参与安装；`latest` 指向 `3.1.1`，忽略即可。
+> npm 的版本列表里还能看到一个 `0.0.0-stage`：这是 npm 对「新包首次发布」的占位版本（staged creation 的公开占位），内容为空、不参与安装；`latest` 指向 `3.1.2`，忽略即可。
 
 ### 方式二：从源码安装（开发/离线）
 
@@ -130,4 +131,4 @@ npm test        # 22 个用例（node --test，无外部依赖）
 npm run test:sandbox   # 等价于 node --test --test-isolation=none
 ```
 
-`test/session.test.mjs` 用桩 DOM 加载插件本体，覆盖：guest 存储快照的裁剪/异常上报、快照回写与失败上报、宿主侧快照的版本与来源校验；**激活冒烟测试**——直接跑真实源码的 `apply`，断言右侧栏类型注册（id/kind/priority/keepMounted/guide 卡片顺序与 commandId/图标）、正文与 chip 标题两个槽位 key、chip 标题组件（鲸鱼 logo + 文字 + tooltip）、新会话 hero 选项行按钮（独立 id/class）、会话头部按钮仍在 `order < -10` 的最左位置、`Ctrl+Q` 命令的默认绑定与「无会话被阻止」、语言跟随、样式表归属、停用后注册与样式全部撤回；以及**标签页 guest**——挂载正文时申请租约并塞入 bootstrap `<webview>`、卸载时退租与移除、`dom-ready` 后换 UA 并进首页、有快照时先走种子页并回写、链接进 Browser 标签或回退系统浏览器、重复 ref 不重复建 guest、Web 下用 iframe。桩 guest 照抄 Electron 的契约：**`dom-ready` 之前任何方法都抛错**。
+`test/session.test.mjs` 用桩 DOM 加载插件本体，覆盖：guest 存储快照的裁剪/异常上报、快照回写与失败上报、宿主侧快照的版本与来源校验；**激活冒烟测试**——直接跑真实源码的 `apply`，断言右侧栏类型注册（id/kind/priority/keepMounted/guide 卡片顺序与 commandId/图标）、正文与 chip 标题两个槽位 key、chip 标题组件（鲸鱼 logo + 文字 + tooltip）、新会话 overlay 按钮槽位（独立 id，hero 阶段外自动隐藏）、会话头部按钮仍在 `order < -10` 的最左位置、`Ctrl+Q` 命令的默认绑定与「无会话被阻止」、语言跟随、样式表归属、停用后注册与样式全部撤回；以及**标签页 guest**——挂载正文时申请租约并塞入 bootstrap `<webview>`、卸载时退租与移除、`dom-ready` 后换 UA 并进首页、有快照时先走种子页并回写、链接进 Browser 标签或回退系统浏览器、重复 ref 不重复建 guest、Web 下用 iframe。桩 guest 照抄 Electron 的契约：**`dom-ready` 之前任何方法都抛错**。

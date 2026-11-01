@@ -347,6 +347,8 @@ function loadForActivation(options = {}) {
     createElement(type, props, ...children) { return { type, props: { ...(props ?? {}), children } } },
     useRef(initial) { return { current: initial } },
     useCallback(fn) { return fn },
+    useState(initial) { return [initial, () => {}] },
+    useEffect() {},
   }
   const requireModule = (id) => {
     if (id === 'react') return react
@@ -423,17 +425,15 @@ describe('activation', () => {
     assert.match(element.props.dangerouslySetInnerHTML.__html, /<svg[^>]*>/)
   })
 
-  it('adds the switch to the new-session hero options row', () => {
+  it('seats the new-session switch in the frame overlay, next to the sidebar expand button', () => {
     const { context } = activate()
-    const entry = context.registrations.find((candidate) => candidate.registration.name === 'conversation.hero.options')
-    assert.ok(entry, 'the new-session screen needs its own switch registration')
-    assert.equal(entry.registration.id, 'dsh-chat-switch-hero')
+    const entry = context.registrations.find((candidate) => candidate.registration.name === 'shell.overlay')
+    assert.ok(entry, 'the new-session screen needs the overlay seat')
+    assert.equal(entry.registration.id, 'dsh-chat-switch-corner')
     const element = entry.component()
-    assert.equal(element.type, 'button')
-    assert.equal(element.props.className, 'dsh-chat-switch-button', 'the two instances share a class, not a DOM id')
-    assert.equal(element.props.id, undefined, 'a duplicated DOM id would be invalid while both instances mount')
-    assert.equal(element.props['aria-label'], '打开 DeepSeek Chat')
-    assert.match(element.props.dangerouslySetInnerHTML.__html, /<svg[^>]*>/)
+    assert.equal(element.type, 'div')
+    assert.equal(element.props.className, 'dsh-chat-corner-layer')
+    assert.equal(element.props.children[0], null, 'the button stays hidden until the hero phase is measured')
   })
 
   it('renders the tab chip title with the DeepSeek Chat mark', () => {
