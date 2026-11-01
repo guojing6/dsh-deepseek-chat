@@ -4,9 +4,13 @@ import { describe, it } from 'node:test'
 import vm from 'node:vm'
 
 const SOURCE = new URL('../lib/client.js', import.meta.url)
+const MANIFEST = JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf8'))
 const CHAT_ORIGIN = 'https://chat.deepseek.com'
 const CHAT_SEED_URL = CHAT_ORIGIN + '/robots.txt'
 const SESSION_KEY = 'dsh-deepseek-chat:chat-session'
+
+/** Resolve after the microtask queue and one turn of the event loop. */
+const flush = () => new Promise((resolve) => setImmediate(resolve))
 
 /** A stand-in for the guest's own localStorage (the page's, not the host's). */
 function storage(seed = {}) {
@@ -73,6 +77,15 @@ function loadPlugin() {
   host.__factory(() => ({}))
   return { probe: host.__probe, hostStorage }
 }
+
+describe('compatibility declaration', () => {
+  it('declares the host range DSH actually reads', () => {
+    // DSH's gate and dshmarket read engines.dsh (or host peers); a custom
+    // dsh.compatibility map is invisible and leaves the plugin "undeclared".
+    assert.equal(MANIFEST.engines?.dsh, '>=0.2.1-alpha.3 <0.2.2-0')
+    assert.equal(MANIFEST.dsh?.compatibility, undefined)
+  })
+})
 
 describe('guest storage snapshot', () => {
   it('keeps the sign-in entries and drops oversized caches', () => {
@@ -241,7 +254,10 @@ function createContext(options = {}) {
     },
   }
   const sidebarRight = {
-    openTab: (kind, tabOptions) => { (options.openTabs ??= []).push([kind, tabOptions]) },
+    openTab: (kind, tabOptions) => {
+      if (options.openTabThrows === true) throw new Error('no session surface is mounted')
+      ;(options.openTabs ??= []).push([kind, tabOptions])
+    },
     commandTarget: options.commandTarget ?? (() => ({ sessionId: 'session-1' })),
   }
   const sidebarRightTabs = {
@@ -473,6 +489,26 @@ describe('activation', () => {
     assert.equal(options.openTabs.length, 2, 'the command opens the tab too')
   })
 
+  it('falls back to the default browser when the right sidebar cannot open', () => {
+    const opened = []
+    const options = { openTabThrows: true, open: (url) => { opened.push(url); return {} } }
+    const { context } = activate(options)
+    context.switchElement().props.onClick()
+    assert.deepEqual(opened, [CHAT_ORIGIN + '/'], 'a failed sidebar open must not leave the switch dead')
+  })
+
+  it('stays completely inert on the Web surface', () => {
+    // DSH's client bundle platform is always "web", so the Web surface is rejected at
+    // activation: no slots, tab type, shortcut, or stylesheet may be registered there.
+    const loaded = loadForActivation({ protocol: 'http:' })
+    const context = createContext()
+    loaded.module.apply(context.ctx)
+    assert.equal(context.registrations.length, 0)
+    assert.equal(context.types.length, 0)
+    assert.equal(context.commands.length, 0)
+    assert.equal(loaded.dom.document.head.children.length, 0, 'the Web surface must not install the plugin stylesheet')
+  })
+
   it('blocks Ctrl+Q when no session is open', () => {
     const { context } = activate({ commandTarget: () => undefined })
     const resolution = context.commands[0].command.resolve({ target: {} })
@@ -521,6 +557,11 @@ describe('tab guest', () => {
   it('boots the chat interface and standardizes the guest user agent', async () => {
     const session = await mountBody()
     session.ready()
+    // The shell's own first-dom-ready listener must get to record the lease before the
+    // plugin starts a navigation, so the first handler turn does not load anything.
+    assert.equal(session.options.loads, undefined, 'the first dom-ready must not navigate synchronously')
+    assert.equal(session.options.userAgents, undefined)
+    await flush()
     assert.equal(session.options.userAgents, 1, 'the guest must not advertise Electron')
     assert.deepEqual(session.options.loads, [CHAT_ORIGIN + '/'], 'without a snapshot the page opens directly')
   })
@@ -531,10 +572,11 @@ describe('tab guest', () => {
     }
     const session = await mountBody({ hostStorage, executeResult: 'token-1' })
     session.ready()
+    await flush()
     assert.equal(session.options.loads.length, 1, 'the seed document must boot first')
     assert.equal(session.options.loads[0], CHAT_SEED_URL)
     session.ready()
-    await new Promise((resolve) => setImmediate(resolve))
+    await flush()
     assert.equal(session.options.scripts.length, 1, 'the snapshot must be written into the seed document')
     assert.equal(session.options.loads.length, 2)
     assert.equal(session.options.loads[1], CHAT_ORIGIN + '/')
@@ -565,15 +607,5 @@ describe('tab guest', () => {
     await new Promise((resolve) => setImmediate(resolve))
     assert.equal(session.dom.container.children.length, 1, 'a repeated ref must not create a second guest')
     session.unmount()
-  })
-
-  it('embeds the chat in an iframe on web', async () => {
-    const session = activate({ protocol: 'http:' })
-    session.bodyElement.props.ref(session.dom.container)
-    await new Promise((resolve) => setImmediate(resolve))
-    const frame = session.dom.container.children[0]
-    assert.equal(frame.tagName, 'IFRAME')
-    assert.equal(frame.getAttribute('src'), CHAT_ORIGIN + '/')
-    assert.equal(session.dom.container.children.length, 1)
   })
 })

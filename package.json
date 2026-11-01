@@ -1,7 +1,7 @@
 {
   "name": "@guojing6/dsh-deepseek-chat",
-  "version": "3.1.2",
-  "description": "DeepSeek Harness client plugin: a right-sidebar DeepSeek Chat tab (guide card + Ctrl+Q + a session-header switch) that embeds chat.deepseek.com beside the conversation.",
+  "version": "3.1.3",
+  "description": "DeepSeek Harness Desktop client plugin: a right-sidebar DeepSeek Chat tab that embeds chat.deepseek.com beside the conversation, with a guide card, Ctrl+Q and a session-header switch. Desktop-only; the Web surface registers no UI.",
   "type": "module",
   "main": "lib/index.js",
   "exports": {
@@ -19,6 +19,9 @@
     "lib/client.js",
     "cordis.patch.yml"
   ],
+  "engines": {
+    "dsh": ">=0.2.1-alpha.3 <0.2.2-0"
+  },
   "dsh": {
     "manifestVersion": 1,
     "client": {
@@ -26,18 +29,6 @@
     },
     "bundle": {
       "patch": "./cordis.patch.yml"
-    },
-    "compatibility": {
-      "dshReleases": {
-        "0.2.1-alpha.3": "compatible",
-        "0.2.1-alpha.4": "compatible",
-        "0.2.1-alpha.5": "compatible",
-        "0.2.1-rc.1": "compatible",
-        "0.2.1-rc.2": "compatible",
-        "0.2.1-rc.3": "compatible",
-        "0.2.1-rc.4": "compatible",
-        "0.2.1-rc.5": "compatible"
-      }
     }
   },
   "keywords": [
