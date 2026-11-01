@@ -423,6 +423,19 @@ describe('activation', () => {
     assert.match(element.props.dangerouslySetInnerHTML.__html, /<svg[^>]*>/)
   })
 
+  it('adds the switch to the new-session hero options row', () => {
+    const { context } = activate()
+    const entry = context.registrations.find((candidate) => candidate.registration.name === 'conversation.hero.options')
+    assert.ok(entry, 'the new-session screen needs its own switch registration')
+    assert.equal(entry.registration.id, 'dsh-chat-switch-hero')
+    const element = entry.component()
+    assert.equal(element.type, 'button')
+    assert.equal(element.props.className, 'dsh-chat-switch-button', 'the two instances share a class, not a DOM id')
+    assert.equal(element.props.id, undefined, 'a duplicated DOM id would be invalid while both instances mount')
+    assert.equal(element.props['aria-label'], '打开 DeepSeek Chat')
+    assert.match(element.props.dangerouslySetInnerHTML.__html, /<svg[^>]*>/)
+  })
+
   it('renders the tab chip title with the DeepSeek Chat mark', () => {
     const { context } = activate()
     const title = context.titleComponent()
@@ -487,7 +500,7 @@ describe('activation', () => {
     const style = dom.document.head.children.find((node) => node.tagName === 'STYLE')
     assert.ok(style, 'the plugin must install its stylesheet')
     assert.equal(style.getAttribute('data-plugin'), '@guojing6/dsh-deepseek-chat')
-    assert.match(style.textContent, /#dsh-chat-switch \{/, 'the switch must be styled as an icon button')
+    assert.match(style.textContent, /.dsh-chat-switch-button \{/, 'the switch must be styled as an icon button')
     assert.match(style.textContent, /\.dsh-deepseek-chat-body \{/, 'the tab body must fill its pane')
   })
 })
